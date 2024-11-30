@@ -1,0 +1,10 @@
+.vscode/
+.pylintrc
+.DS_Store
+
+venv/
+.pytest_cache/
+__pycache__/
+logs/
+
+tasks.json
