@@ -11,7 +11,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers= [
-        logging.FileHandler('logs/task.log')
+        logging.FileHandler('logs/task.log'),
         # logging.StreamHandler()
     ]
 )
@@ -69,7 +69,7 @@ class Task:
         """
         return f"Задача: {self.title}, Описание: {self.description}, Категория:{self.category}, Срок выполнения до: {self.due_date.strftime('%d.%m.%Y')}, Приоритет: {self.priority}, Статус: {self.status}"
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """
         Проверяет равенство объектов
         """
@@ -78,7 +78,7 @@ class Task:
 
         return False
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Преобразует объект книги в словарь
         """
