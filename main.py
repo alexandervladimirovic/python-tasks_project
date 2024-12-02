@@ -1,11 +1,14 @@
 import argparse
+from datetime import datetime
 
 from tasks.task_manager import TaskManager
 
 
 def main():
 
-    task_manager = TaskManager(input("Введите название файла в котором будете работать: "))
+    filename = input("Введите имя файла: ")
+
+    task_manager = TaskManager(filename)
 
     parser = argparse.ArgumentParser(description="Менеджер Задач")
     subparsers = parser.add_subparsers(dest="command", help="Доступные команды")
@@ -64,14 +67,15 @@ def main():
             args.priority,
             args.status
         )
-        print("Задача добавлена!")
 
     elif args.command == "delete":
         
         if args.category:
             task_manager.delete_task_by_category(category=args.category)
+            task_manager.save_json()
         elif args.id:
             task_manager.delete_task_by_id(task_id=args.id)
+            task_manager.save_json()
         else:
             print("Укажите категорию или ID задачи для удаления")
 
@@ -98,12 +102,21 @@ def main():
 
     elif args.command == "update":
 
+        if args.due_date.isdigit():
+            due_date = int(args.due_date)
+        else:
+            try:
+                due_date = datetime.strptime(args.due_date, "%d.%m.%Y")
+            except ValueError as e:
+                raise ValueError ("Дата должна быть в формате YYYY-MM-DD или числом (количество дней до дедлайна)") from e
+            
+        
         task_manager.update_task(
             task_id=args.id,
             title=args.title,
             description=args.description,
             category=args.category,
-            due_date=int(args.due_date),
+            due_date=due_date,
             priority=args.priority,
             status=args.status)
 

@@ -29,10 +29,11 @@ class TaskManager:
         self.tasks = {}
         self.load_json()
 
-    def add_task(self, title: str, description: str, category: str, due_date: int, priority: str = "средний", status: str = "не выполнено"):
+    def add_task(self, title: str, description: str, category: str, due_date: int | datetime, priority: str = "средний", status: str = "не выполнено"):
         """
         Добавляет задачу в список задач
         """
+            
         try:
             new_tasks = Task(title, description, category, due_date, priority, status)
             self.tasks[new_tasks.id] = new_tasks
@@ -56,7 +57,7 @@ class TaskManager:
             del self.tasks[task_id]
             logger.info("Задача с id %s удалена", task_id)
             print(f"Задача с id {task_id} удалена")
-            self.save_json()
+            # self.save_json()
         else:
             logger.error("Удаление задачи не удалось: задача с id %s отсутствует в списке.", task_id)
             print(f"Задача с id {task_id} отсутствует.")
@@ -74,7 +75,7 @@ class TaskManager:
             del self.tasks[selected_task.id]
             logger.info("Задача с ID '%s' удалена.", selected_task.id)
             print(f"Задача '{selected_task.title}' удалена.")
-            self.save_json()
+            # self.save_json()
             return
 
         if not tasks_category:

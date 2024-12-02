@@ -33,7 +33,7 @@ class Task:
         priority: Приоритет задачи 
         status: Статус выполнения задачи
         """
-    def __init__(self, title: str, description: str, category: str, due_date: int, priority: str = "средний", status: str = "не выполнено"):
+    def __init__(self, title: str, description: str, category: str, due_date: int | datetime, priority: str = "средний", status: str = "не выполнено"):
 
         self.id = str(uuid.uuid4())
         self.title = self.validate_string(title, "Название задачи")
@@ -108,7 +108,7 @@ class Task:
             "title": self.title,
             "description": self.description,
             "category": self.category,
-            "due_date": self.due_date.strftime('%d.%m.%Y'),
+            "due_date": self.due_date.strftime('%d.%m.%Y') if isinstance(self.due_date, datetime) else self.due_date,
             "priority": self.priority,
             "status": self.status
         }
