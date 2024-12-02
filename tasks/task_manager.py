@@ -37,7 +37,7 @@ class TaskManager:
         try:
             new_tasks = Task(title, description, category, due_date, priority, status)
             self.tasks[new_tasks.id] = new_tasks
-            self.save_json()
+
             logger.info("Добавлена задача: %s (Приоритет: %s, до %s)", title, new_tasks.priority, new_tasks.due_date.strftime('%d.%m.%Y'))
 
         except TypeError as e:
@@ -80,8 +80,7 @@ class TaskManager:
 
         if not tasks_category:
             logger.warning("Задачи с категорией '%s' не найдены", category)
-            print(f"Нет задач с категорией {category}")
-            return
+            raise ValueError (f"Удаление задачи не удалось: задачи с категорией {category} не найдены")
 
         print(f"Задачи с категорией {category}:")
 
@@ -198,8 +197,7 @@ class TaskManager:
 
         if not task:
             logger.error("Задача с ID '%s' не найдена.", task_id)
-            print(f"Задача с ID '{task_id}' не найдена.")
-            return
+            raise KeyError(f"Задача с ID '{task_id}' не найдена.")
         
         if title:
             task.title = title
@@ -220,7 +218,6 @@ class TaskManager:
             task.status = self.validate_status(status)
 
         logging.info("Задача обновлена: %s (ID: %s)", task.title, task.id)
-        self.save_json()
         return task
 
     @staticmethod

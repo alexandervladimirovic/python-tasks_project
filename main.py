@@ -68,6 +68,8 @@ def main():
             args.status
         )
 
+        task_manager.save_json()
+
     elif args.command == "delete":
         
         if args.category:
