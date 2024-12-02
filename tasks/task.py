@@ -1,20 +1,20 @@
 import os
 import uuid
+import logging.config
 from datetime import datetime, timedelta
-import logging
+
+import yaml
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    handlers= [
-        logging.FileHandler('logs/task.log'),
-        # logging.StreamHandler()
-    ]
-)
+def setup_logging(config_path="logs/logging_config.yaml"):
+    
+    with open(config_path, "r", encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+        logging.config.dictConfig(config)
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -33,41 +33,62 @@ class Task:
         priority: Приоритет задачи 
         status: Статус выполнения задачи
         """
-    def __init__(self, title: str, description: str, category: str, due_date: int):
-
-        if not title or not isinstance(title, str):
-            logger.error("Введена пустая задача")
-            raise ValueError("Задача не может быть пустой и должна быть строкой")
-
-        if not description or not isinstance(description, str):
-            logger.error("Введено пустое описание")
-            raise ValueError("Описание задачи не может быть пустым и должно быть строкой")
-
-        if not category or not isinstance(category, str):
-            logger.error("Введена пустая категория")
-            raise ValueError("Категория задачи не может быть пустой и должна быть строкой")
-
-        if not isinstance(due_date, int):
-            logger.error("Введен пустой срок выполнения")
-            raise ValueError("Срок выполнения задачи не может быть пустой и должен быть числом")
+    def __init__(self, title: str, description: str, category: str, due_date: int, priority: str = "средний", status: str = "не выполнено"):
 
         self.id = str(uuid.uuid4())
-        self.priority = "средний"
-        self.due_date = datetime.now() + timedelta(days=due_date)
-        self.status = "не выполнено"
+        self.title = self.validate_string(title, "Название задачи")
+        self.description = self.validate_string(description, "Описание задачи")
+        self.category = self.validate_string(category, "Категория задачи")
+        self.due_date = self.validate_date(due_date)
+        self.priority = self.validate_priority(priority)
+        self.status = self.validate_status(status)
 
+        logger.info("Создана задача: %s (ID: %s, срок выполнения до: %s)",
+                    self.title, self.id, self.due_date.strftime('%d.%m.%Y'))
 
-        self.title = title
-        self.description = description
-        self.category = category
+    
+    @staticmethod
+    def validate_string(value: str, field_name: str) -> str:
 
-        logger.info("Создана задача: %s (ID: %s, срок выполнения до: %s)", self.title, self.id, self.due_date.strftime('%d.%m.%Y'))
+        if not value or not isinstance(value, str):
+            logger.error("Неверный тип данных для %s", field_name)
+            raise TypeError(f"{field_name.capitalize()} должен иметь строковый тип")
+        return value
+    
+    @staticmethod
+    def validate_date(value: int | datetime) -> datetime:
 
+        if isinstance(value, int) and value > 0:
+            return datetime.now() + timedelta(days=value)
+        elif isinstance(value, datetime):
+            return value
+        else:
+            logger.error("Неверный тип данных для срока выполнения задачи")
+            raise TypeError("Срок выполнения задачи должен иметь тип datetime или int")
+
+    @staticmethod
+    def validate_priority(value: str) -> str:
+
+        if value not in {"низкий", "средний", "высокий"}:
+            logger.error("Неверный тип данных для приоритета задачи")
+            raise ValueError("Приоритет задачи должен быть 'низкий', 'средний' или 'высокий'")
+        
+        return value
+    
+    @staticmethod
+    def validate_status(value: str) -> str:
+
+        if value not in {"выполнено", "не выполнено"}:
+            logger.error("Неверный тип данных для статуса задачи")
+            raise ValueError("Статус задачи должен быть 'выполнено' или 'не выполнено'")
+        
+        return value
+    
     def __repr__(self):
         """
         Возвращает строковое представление объекта
         """
-        return f"Задача: {self.title}, Описание: {self.description}, Категория:{self.category}, Срок выполнения до: {self.due_date.strftime('%d.%m.%Y')}, Приоритет: {self.priority}, Статус: {self.status}"
+        return f"Задача: {self.title}, Описание: {self.description}, Категория:{self.category}, Срок выполнения до: {self.due_date.strftime('%d.%m.%Y')}, Приоритет: {self.priority}, Статус: {self.status}" 
     
     def __eq__(self, other) -> bool:
         """
@@ -87,7 +108,7 @@ class Task:
             "title": self.title,
             "description": self.description,
             "category": self.category,
-            "due_date": self.due_date,
+            "due_date": self.due_date.strftime('%d.%m.%Y'),
             "priority": self.priority,
             "status": self.status
         }
